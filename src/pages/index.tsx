@@ -144,17 +144,17 @@ const Home = () => {
               Operator.map((item, index) => (
                 <AccordionItem key={index}>
                   <AccordionButton>
-                    <Text w={'full'} textAlign={"start"} fontSize={'sm'} fontWeight={'semibold'}
+                    <Text w={'full'} textAlign={"start"} fontSize={'xs'} fontWeight={'semibold'}
                           color={'#003434'}>{item.name}</Text>
                     <AccordionIcon/>
                   </AccordionButton>
                   <AccordionPanel px={4} pb={4}>
-                    <Stack spacing={3}>
+                    <Stack spacing={1}>
                       {
                         item.children.map((child, childIndex) => (
                           <Popover key={childIndex} trigger={'hover'}>
                             <PopoverTrigger>
-                              <Text fontSize={'sm'} cursor={'pointer'} pl={2}
+                              <Text fontSize={'sm'} cursor={'pointer'} pl={2} color={'#003232'}
                                       onClick={() => {
                                         if (monacoRef) {
                                           // @ts-ignore
@@ -170,9 +170,9 @@ const Home = () => {
                               </Text>
                             </PopoverTrigger>
                             <PopoverContent borderRadius={'0'}>
-                              <PopoverHeader fontSize={'sm'} color={'#003232'} fontWeight={'semibold'}>{child.name}</PopoverHeader>
+                              <PopoverHeader fontSize={'xs'} color={'#003232'} fontWeight={'semibold'}>{child.name}</PopoverHeader>
                               <PopoverBody>
-                                <Text fontSize={'sm'} color={'#003232'} whiteSpace={'pre-wrap'}>{child.explain}</Text>
+                                <Text fontSize={'xs'} color={'#003232'} whiteSpace={'pre-wrap'}>{child.explain}</Text>
                               </PopoverBody>
                             </PopoverContent>
                           </Popover>
