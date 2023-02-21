@@ -1,7 +1,7 @@
 import {
   Accordion,
   AccordionButton, AccordionIcon,
-  AccordionItem, AccordionPanel, Box,
+  AccordionItem, AccordionPanel,
   Button,
   Heading,
   HStack, Popover, PopoverBody, PopoverContent, PopoverHeader, PopoverTrigger,
@@ -11,10 +11,49 @@ import {
 import {useEffect, useRef, useState} from "react";
 import Editor from "@monaco-editor/react";
 import {ConnectButton} from "@rainbow-me/rainbowkit";
+import {NEST_CRAFT_ADDRESS} from "../../constant/address";
+import {NEST_CRAFT_ABI} from "../../constant/abi";
+import {useContractRead, useNetwork} from "wagmi";
+import {BigNumber} from "ethers";
 
 const Home = () => {
+  const {chain} = useNetwork()
   const [text, setText] = useState("");
   const monacoRef = useRef(null);
+  const [output, setOutput] = useState<{
+    raw: BigNumber | undefined,
+    format: string,
+  }>({
+    raw: undefined,
+    format: '',
+  });
+
+  const nestCraftContract = {
+    address: NEST_CRAFT_ADDRESS[chain?.id || 97],
+    abi: NEST_CRAFT_ABI
+  }
+  const {data: estimateData, status: estimateStatus} = useContractRead({
+    ...nestCraftContract,
+    functionName: 'estimate',
+    args: [text],
+    watch: true,
+  })
+
+  const run = () => {
+    if (estimateStatus === 'success') {
+      setOutput({
+        raw: BigNumber.from(estimateData),
+        format: (BigNumber.from(estimateData).div(BigNumber.from(10).pow(12)).toNumber() / 1000000).toLocaleString('en', {
+          maximumFractionDigits: 6
+        }) + ' Ether',
+      })
+    } else if (estimateStatus === 'error') {
+      setOutput({
+        raw: undefined,
+        format: 'error',
+      })
+    }
+  }
 
   const Operator = [
     {
@@ -140,7 +179,7 @@ const Home = () => {
         </Stack>
         <Heading fontSize={'xl'}>NESTCraft Playground</Heading>
         <Stack w={'260px'} align={"end"}>
-          <ConnectButton />
+          <ConnectButton/>
         </Stack>
       </HStack>
       <HStack h={'full'} spacing={5}>
@@ -161,22 +200,28 @@ const Home = () => {
                           <Popover key={childIndex} trigger={'hover'}>
                             <PopoverTrigger>
                               <Text fontSize={'sm'} cursor={'pointer'} pl={2} color={'#003232'}
-                                      onClick={() => {
-                                        if (monacoRef) {
-                                          // @ts-ignore
-                                          const selection = monacoRef.current.getSelection();
-                                          const id = { major: 1, minor: 1 };
-                                          const text = child.value + " ";
-                                          const op = {identifier: id, range: selection, text: text, forceMoveMarkers: true};
-                                          // @ts-ignore
-                                          monacoRef.current.executeEdits("my-source", [op]);
-                                        }
-                                      }}>
+                                    onClick={() => {
+                                      if (monacoRef) {
+                                        // @ts-ignore
+                                        const selection = monacoRef.current.getSelection();
+                                        const id = {major: 1, minor: 1};
+                                        const text = child.value + " ";
+                                        const op = {
+                                          identifier: id,
+                                          range: selection,
+                                          text: text,
+                                          forceMoveMarkers: true
+                                        };
+                                        // @ts-ignore
+                                        monacoRef.current.executeEdits("my-source", [op]);
+                                      }
+                                    }}>
                                 {child.name}
                               </Text>
                             </PopoverTrigger>
                             <PopoverContent borderRadius={'0'}>
-                              <PopoverHeader fontSize={'xs'} color={'#003232'} fontWeight={'semibold'}>{child.name}</PopoverHeader>
+                              <PopoverHeader fontSize={'xs'} color={'#003232'}
+                                             fontWeight={'semibold'}>{child.name}</PopoverHeader>
                               <PopoverBody>
                                 <Text fontSize={'xs'} color={'#003232'} whiteSpace={'pre-wrap'}>{child.explain}</Text>
                               </PopoverBody>
@@ -228,8 +273,12 @@ const Home = () => {
               </Stack>
             </HStack>
             <HStack px={5} py={4} bg={'#2D2D2D'} justifyContent={"space-between"}>
-              <Text fontSize={'xs'} color={'#ffffff'} fontWeight={'semibold'}>Output: {text}</Text>
-              <Button size={'xs'} fontWeight={'semibold'}>Run</Button>
+              <HStack>
+                <Text fontSize={'xs'} color={'#ffffff'}
+                      fontWeight={'semibold'}>Output: {output.raw?.toString()}</Text>
+                <Text fontSize={'xs'} color={'#ADADAD'}>{output.format}</Text>
+              </HStack>
+              <Button size={'xs'} fontWeight={'semibold'} onClick={run}>Run</Button>
             </HStack>
           </Stack>
           <Stack w={'full'} minH={'200px'} bg={'yellow.200'} p={4} align={"center"} justifyContent={"center"}>
