@@ -256,7 +256,7 @@ const Home = () => {
                 theme={'vs-dark'}
                 className={"py-4"}
                 defaultLanguage={"javascript"}
-                defaultValue={"// 请在这里输入你的表达式\n// 例如: \n1 + 1"}
+                defaultValue={"// 请在这里输入你的表达式\n// 例如: 1 + 1\n"}
                 height={'100%'}
                 width={'60%'}
                 onChange={(value) => {
