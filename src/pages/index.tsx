@@ -270,7 +270,7 @@ const Home = () => {
                 }}
               />
               <Stack w={'40%'} h={'full'}>
-                <Text color={'#adadad'} whiteSpace={'pre-wrap'} fontSize={'sm'}>
+                <Text color={'#adadad'} whiteSpace={'pre-wrap'} fontSize={'xs'}>
                   规则:<br/>
                   1. 表达式支持加(+)减(-)乘(*)除(/)以及指数运算(**)<br/>
                   2. 表达式优先级 + -,* /,** 三个级别<br/>
