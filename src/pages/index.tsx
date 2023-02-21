@@ -8,7 +8,7 @@ import {
   Stack,
   Text
 } from "@chakra-ui/react";
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import Editor from "@monaco-editor/react";
 import {ConnectButton} from "@rainbow-me/rainbowkit";
 import {NEST_CRAFT_ADDRESS} from "../../constant/address";
@@ -28,6 +28,11 @@ const Home = () => {
     format: '',
   });
 
+  const formatText = useMemo(() => {
+    // should remove all \n, and all Code comments, like // and /**/
+    return text.replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, '').replace(/\n/g, '')
+  }, [text])
+
   const nestCraftContract = {
     address: NEST_CRAFT_ADDRESS[chain?.id || 97],
     abi: NEST_CRAFT_ABI
@@ -35,11 +40,15 @@ const Home = () => {
   const {data: estimateData, status: estimateStatus} = useContractRead({
     ...nestCraftContract,
     functionName: 'estimate',
-    args: [text],
+    args: [formatText],
     watch: true,
   })
 
-  const run = () => {
+  const run = useCallback(() => {
+    setOutput({
+      raw: undefined,
+      format: 'loading...',
+    })
     if (estimateStatus === 'success') {
       setOutput({
         raw: BigNumber.from(estimateData),
@@ -53,7 +62,11 @@ const Home = () => {
         format: 'error',
       })
     }
-  }
+  }, [estimateStatus, estimateData])
+
+  useEffect(() => {
+    run()
+  }, [run])
 
   const Operator = [
     {
@@ -243,7 +256,7 @@ const Home = () => {
                 theme={'vs-dark'}
                 className={"py-4"}
                 defaultLanguage={"javascript"}
-                defaultValue={""}
+                defaultValue={"// 请在这里输入你的表达式\n// 例如: \n1 + 1"}
                 height={'100%'}
                 width={'60%'}
                 onChange={(value) => {
@@ -278,11 +291,11 @@ const Home = () => {
                       fontWeight={'semibold'}>Output: {output.raw?.toString()}</Text>
                 <Text fontSize={'xs'} color={'#ADADAD'}>{output.format}</Text>
               </HStack>
-              <Button size={'xs'} fontWeight={'semibold'} onClick={run}>Run</Button>
+              {/*<Button size={'xs'} fontWeight={'semibold'} onClick={run}>Run</Button>*/}
             </HStack>
           </Stack>
-          <Stack w={'full'} minH={'200px'} bg={'yellow.200'} p={4} align={"center"} justifyContent={"center"}>
-            <Text fontSize={'sm'} fontWeight={'semibold'} color={'#003232'}>创建你的 NESTCraft 表达式</Text>
+          <Stack w={'full'} minH={'200px'} bg={'yellow.200'} spacing={4} p={4} align={"center"} justifyContent={"center"}>
+            <Text fontSize={'xl'} fontWeight={'semibold'} color={'#003232'}>{formatText}</Text>
             <Button size={'sm'} fontWeight={'semibold'}>Create</Button>
           </Stack>
         </Stack>
